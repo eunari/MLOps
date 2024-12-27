@@ -4,7 +4,7 @@ import requests
 import random
 
 # Step 1: Connect to SQLite database
-db_name = "steel.db"
+db_name = "data/steel.db"
 conn = sqlite3.connect(db_name)
 c = conn.cursor()
 
@@ -13,14 +13,20 @@ try:
     test_df = pd.read_sql_query("SELECT * FROM test", conn)
     if test_df.empty:
         print("The test table is empty.")
-        conn.close()
         exit()
-    else:
-        # Randomly select one row
-        random_row = test_df.sample(n=1).to_dict(orient="records")[0]
-        print("Random row selected from test table:", random_row)
+
+    # Randomly select one row
+    random_row = test_df.sample(n=1).to_dict(orient="records")[0]
+    print("Random row selected from test table:", random_row)
+
+    # Validate required columns
+    required_columns = [f"V{i}" for i in range(1, 28)]  # Example required columns
+    if not set(required_columns).issubset(random_row.keys()):
+        missing_cols = set(required_columns) - set(random_row.keys())
+        print(f"Missing required columns in the selected row: {missing_cols}")
+        exit()
 except Exception as e:
-    print(f"Error accessing test table: {e}")
+    print(f"Error accessing or validating the 'test' table: {e}")
     conn.close()
     exit()
 
@@ -28,31 +34,33 @@ except Exception as e:
 api_url = "https://curly-parakeet-7v57wg9vxrw6crv95-8000.app.github.dev/predict"  # Replace with your actual FastAPI endpoint
 
 try:
-    response = requests.post(api_url, json=random_row)
-    if response.status_code == 200:
-        prediction = response.json().get("prediction")
-        print("Prediction received from API:", prediction)
-    else:
-        print(f"API call failed with status code {response.status_code}: {response.text}")
-        conn.close()
-        exit()
+    payload = {"data": [random_row]}
+    print("Payload sent to API:", payload)
+
+    response = requests.post(api_url, json=payload)
+    response.raise_for_status()  # Raise an exception for HTTP errors
+    prediction = response.json().get("prediction")
+    print("Prediction received from API:", prediction)
+except requests.exceptions.RequestException as e:
+    print(f"Error during API call: {e}")
+    conn.close()
+    exit()
 except Exception as e:
-    print(f"Error calling the API: {e}")
+    print(f"Unexpected error during API call: {e}")
     conn.close()
     exit()
 
 # Step 4: Insert prediction into the predict table
 try:
-    # Ensure the predict table exists
     c.execute("""
         CREATE TABLE IF NOT EXISTS predict (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            input_data TEXT,
             predict TEXT
         )
     """)
-
-    # Insert prediction into the table
-    c.execute("INSERT INTO predict (predict) VALUES (?)", (str(prediction),))
+    input_data = str(random_row)  # Convert the row to a string for storage
+    c.execute("INSERT INTO predict (input_data, predict) VALUES (?, ?)", (input_data, str(prediction)))
     conn.commit()
     print("Prediction successfully inserted into the predict table.")
 except Exception as e:

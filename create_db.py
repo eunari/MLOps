@@ -10,7 +10,7 @@ train = pd.read_csv("data/train.csv")
 train.to_sql("train", conn, index=False)
 
 ### create test table into DB ###
-test = pd.read_csv("data/test.csv")
+test = pd.read_csv("/data/test.csv")
 test.to_sql("test", conn, index=False)
 
 ### create predict table ###
