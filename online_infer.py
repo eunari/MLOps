@@ -52,15 +52,8 @@ except Exception as e:
 
 # Step 4: Insert prediction into the predict table
 try:
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS predict (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            input_data TEXT,
-            predict TEXT
-        )
-    """)
     input_data = str(random_row)  # Convert the row to a string for storage
-    c.execute("INSERT INTO predict (input_data, predict) VALUES (?, ?)", (input_data, str(prediction)))
+    c.execute("INSERT INTO predict (predict) VALUES (?)", (str(prediction),))
     conn.commit()
     print("Prediction successfully inserted into the predict table.")
 except Exception as e:
