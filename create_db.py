@@ -1,16 +1,16 @@
 import sqlite3
 import pandas as pd
 
-db_name = "/steel.db"
+db_name = "data/steel.db"
 conn = sqlite3.connect(db_name)
 c = conn.cursor()
 
 ### create train table into DB ###
-train = pd.read_csv("/train.csv")
+train = pd.read_csv("data/train.csv")
 train.to_sql("train", conn, index=False)
 
 ### create test table into DB ###
-test = pd.read_csv("/test.csv")
+test = pd.read_csv("data/test.csv")
 test.to_sql("test", conn, index=False)
 
 ### create predict table ###

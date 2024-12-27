@@ -12,17 +12,19 @@ with open("Trans.pkl","rb") as f:
     trans = pickle.load(f)
 
 class Dataset(BaseModel):
-    data: List
+    data: List[dict]
 
 app = FastAPI()
 
 @app.post("/predict")
 def get_prediction(dat: Dataset):
     data = dict(dat)["data"][0]
-    data = pd.DataFrame(data=[data.values()], columns=data.keys())
-    trans_x = trans.transform(data)
+    data_df = pd.DataFrame([data])
+
+    trans_x = trans.transform(data_df)
     prediction = model.predict(trans_x).tolist()
     log_proba = model.predict_proba(trans_x).tolist()
+
     result = {"prediction": prediction, "log_proba": log_proba}
     return result
 

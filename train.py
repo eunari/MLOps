@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import pickle as pkl
 
-db_name = "steel.db"
+db_name = "data/steel.db"
 conn = sqlite3.connect(db_name)
 c = conn.cursor()
 c.execute("SELECT * FROM train")
