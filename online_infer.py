@@ -31,7 +31,7 @@ except Exception as e:
     exit()
 
 # Step 3: Call FastAPI Web-API for prediction
-api_url = "https://curly-parakeet-7v57wg9vxrw6crv95-8000.app.github.dev/predict"  # Replace with your actual FastAPI endpoint
+api_url = "https://curly-parakeet-7v57wg9vxrw6crv95-8000.app.github.dev/predict" 
 
 try:
     payload = {"data": [random_row]}
